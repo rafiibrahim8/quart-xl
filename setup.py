@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from gddl import __version__
+from quart_xl import __version__
 
 def read_file(filename,lines=False):
     try:
