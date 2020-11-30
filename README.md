@@ -10,7 +10,7 @@ I will add this later.
 # INSTALLATION
 From a command line enter the command to install quart-xl
 ```
-pip install git+https://github.com/rafiibrahim8/quart-xl.git
+pip install git+https://github.com/rafiibrahim8/quart-xl.git --upgrade
 ```
 You need to have python 3 installed. quart-xl won't run on python 2.
 # USES

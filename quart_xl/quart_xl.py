@@ -1,8 +1,11 @@
-from glob import glob
+from time import localtime, strftime
 from itertools import takewhile, repeat
+from glob import glob
 from tqdm import tqdm
 import openpyxl
 import os
+
+XL_OUTPUT_DIR_HOME = 'QuartXL-Report'
 
 forbidden_char_filename = {
     # src https://stackoverflow.com/questions/1976007/what-characters-are-forbidden-in-windows-and-linux-directory-names
@@ -146,9 +149,11 @@ def main():
     if(not reports):
         print('No reports found. Make sure you have compiled using Quartus Prime and you are on correct diretory.')
         return
-
-    if(not os.path.exists('ExcellReport')):
-        os.mkdir('ExcellReport')
+    
+    run_dir = strftime('%Y-%m-%d %I:%M:%S%p', localtime()).lower()
+    run_dir = replace_forbidden(run_dir)
+    run_dir = os.path.join(XL_OUTPUT_DIR_HOME, run_dir)
+    os.makedirs(run_dir, exist_ok=True)
 
     parser = Parser()
 
@@ -161,9 +166,9 @@ def main():
             report_name = file.readline().split(' report ')[0]
         except:
             report_name = os.path.basename(r)
-        print('Genarating Excell Report for', report_name)
+        print('Genarating Excel Report for', report_name)
 
-        save_path = os.path.join('ExcellReport',report_name)
+        save_path = os.path.join(run_dir, report_name)
         if(not os.path.exists(save_path)):
             os.mkdir(save_path)
         
