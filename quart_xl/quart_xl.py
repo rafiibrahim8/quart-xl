@@ -25,34 +25,34 @@ class Parser:
     FINISHED = 4
     
     def __init__(self):
-        self.init()
-        self.map = {
+        self.reset()
+        self.__map = {
             Parser.INITIALIZE : self.__set_table_name,
             Parser.COLUMN : self.__set_columns,
             Parser.READING : self.__process_data
         }
     
-    def init(self):
-        self.current_state = Parser.IDLE
-        self.column_called = False #Some tables don't have proper column
+    def reset(self):
+        self.__current_state = Parser.IDLE
+        self.__column_called = False #Some tables don't have proper column
     
     def process_line(self, line:str):
         if(line.startswith('+-')):
-            self.current_state += 1
+            self.__current_state += 1
             return
         if(not line.startswith(';')):
-            self.init()
+            self.reset()
             return
-        func = self.map.get(self.current_state)
+        func = self.__map.get(self.__current_state)
         if(func):
             func(line)
         
     
     def __set_table_name(self,line:str):
-        self.table_name = line.strip().strip(';').strip()
+        self.__table_name = line.strip().strip(';').strip()
     
     def __set_columns(self, line:str):
-        if(self.column_called):
+        if(self.__column_called):
             self.__no_proper_column(line)
             return
         __columns = line.strip().strip(';').split(';')
@@ -63,40 +63,38 @@ class Parser:
             _columns[c_name]= []
             length.append(len(c_name))
         
-        self.columns = _columns
-        self.length = length
-        self.column_called = True
+        self.__columns = _columns
+        self.__length = length
+        self.__column_called = True
     
     def __no_proper_column(self,line):
-        self.current_state = Parser.READING
-        j = 1
+        self.__current_state = Parser.READING
         __columns = dict()
-        for i in self.columns:
-            __columns['_' * j] = [i]
-            j += 1
-        self.columns = __columns
+        for i, col in enumerate(self.__columns, start=1):
+            __columns['_' * i] = [col]
+        self.__columns = __columns
         self.__process_data(line)
     
     def __process_data(self, line:str):
         data = line.strip().strip(';').split(';')
         i = 0
-        for c,d in zip(self.columns,data):
+        for c,d in zip(self.__columns,data):
             value = d.strip()
-            self.columns[c].append(value)
-            self.length[i] = max(self.length[i],len(value))
+            self.__columns[c].append(value)
+            self.__length[i] = max(self.__length[i],len(value))
             i += 1
 
     
     def get_current_state(self):
-        return self.current_state
+        return self.__current_state
     
     def get_json(self):
         ret = dict()
-        ret['table_name'] = self.table_name
-        ret['data'] = self.columns
-        ret['length'] = self.length
+        ret['table_name'] = self.__table_name
+        ret['data'] = self.__columns
+        ret['length'] = self.__length
         
-        self.init()
+        self.reset()
         return ret
 
 def replace_forbidden(name:str):
@@ -127,7 +125,7 @@ def save_xl(json, save_path):
             cell.value = value
     
     file_path = os.path.join(save_path,file_name)
-    i=1
+    i = 1
     while(os.path.exists(file_path)):
         file_path = os.path.join(save_path,file_name.split('.')[-2] + '-' + str(i)+'.xlsx')
         i += 1
@@ -155,7 +153,7 @@ def main():
     parser = Parser()
 
     for r in reports:
-        parser.init()
+        parser.reset()
         total_line = get_line_count(r)
 
         file = open(r, 'r', encoding='utf-8',errors='backslashreplace')

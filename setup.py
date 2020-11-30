@@ -1,14 +1,16 @@
 from setuptools import setup, find_packages
 from gddl import __version__
 
-def read_file(filename):
+def read_file(filename,lines=False):
     try:
         with open(filename, encoding='utf-8') as f:
+            if(lines):
+                return [i.strip() for i in f.readlines() if(i.strip())]
             return f.read()
     except:
-        return []
+        return None
 
-requirements = read_file('requirements.txt')
+requirements = read_file('requirements.txt', lines=True)
 long_description = read_file('README.md')
 
 setup(
@@ -23,7 +25,7 @@ setup(
     url='https://github.com/rafiibrahim8/quart-xl',
     download_url = 'https://github.com/rafiibrahim8/quart-xl/archive/v{}.tar.gz'.format(__version__),
 
-    install_requires=requirements.strip().split('\n'),
+    install_requires=requirements,
     description='Convert Genarated Quartus Prime report into Excell.',
     long_description=long_description,
     long_description_content_type='text/markdown',
